@@ -18,7 +18,7 @@ updated_at= Annotated[datetime, mapped_column(
 
 
 
-class Users(Base):
+class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int_id]
