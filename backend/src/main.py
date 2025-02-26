@@ -9,12 +9,15 @@ from fastapi import FastAPI
 from sqlalchemy import text
 
 from database.database import async_session
-from routers.todotasks import router
-from database.models import Users
+from routers.todotasks import task_router
+from routers.users import user_router
+from database.models import User
 
 
 app = FastAPI()
-app.include_router(router)
+app.include_router(task_router)
+app.include_router(user_router)
+
 
     
 

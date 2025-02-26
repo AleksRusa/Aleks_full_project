@@ -1,6 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import insert, select
-from database.models import Users
 
 from database.models import Todolist
 from schemas.todotask import TodoTask, TodoTaskResponse
