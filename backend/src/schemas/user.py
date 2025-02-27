@@ -1,16 +1,23 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
 
-class UserCreate(BaseModel):
-    first_name: str = Field(max_length=16)
-    last_name: str = Field(max_length=16)
+class UserInfo(BaseModel):
+    first_name: str = Field(max_length=64)
+    last_name: str = Field(max_length=64)
     age: int = Field(gt=0, le=100)
     email: EmailStr
-    password: str = Field(min_length=8, max_length=255)
+class UserCreate(UserInfo):
+    password: bytes = Field(min_length=8, max_length=128)
 
-class TodoCreate(BaseModel):
-    description: str
+class UserSchema(UserInfo):
+    model_config = ConfigDict(string=True)
+    
+    password: bytes = Field(min_length=8, max_length=128)
 
-class TodoResponse(TodoCreate):
+class UserLogin(BaseModel):
     id: int
-    is_done: bool
-    user_id: int
+    email: EmailStr
+    password: bytes = Field(min_length=8, max_length=128)
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str 
