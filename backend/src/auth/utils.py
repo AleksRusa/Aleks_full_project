@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 
 import bcrypt
 import jwt
@@ -14,11 +14,11 @@ def encode_jwt(
         expire_timedelta: timedelta | None = None,
 ):
     to_encode = payload.copy()
-    now = datetime.utcnow()
+    now = int(datetime.now(timezone.utc).timestamp())
     if expire_timedelta:
-        expire = now + expire_timedelta
+        expire = now + int(expire_timedelta.total_seconds())
     else:
-        expire = now + timedelta(minutes=expire_minutes)
+        expire = now + int(timedelta(minutes=expire_minutes).total_seconds())
     to_encode.update(
         exp=expire,
         iat=now,
@@ -57,5 +57,3 @@ def validate_password(
         password=password.encode(),
         hashed_password=hashed_password
     )
-
-print(type(hash_password("password")))

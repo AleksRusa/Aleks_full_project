@@ -9,7 +9,7 @@ from sqlalchemy.sql.sqltypes import TIMESTAMP
 from database.database import Base
 
 int_id = Annotated[int, mapped_column(primary_key=True, autoincrement=True)]
-str_16 = Annotated[str, mapped_column(String(16), nullable=False)]
+str_64 = Annotated[str, mapped_column(String(64), nullable=False)]
 created_at= Annotated[datetime, mapped_column(server_default=text("TIMEZONE('utc', now())"))]
 updated_at= Annotated[datetime, mapped_column(
     server_default=text("TIMEZONE('utc', now())"),
@@ -22,8 +22,8 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int_id]
-    first_name: Mapped[str_16]
-    last_name: Mapped[str_16]
+    first_name: Mapped[str_64]
+    last_name: Mapped[str_64]
     age: Mapped[int]
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     password: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
