@@ -1,13 +1,23 @@
+from jwt import InvalidTokenError, ExpiredSignatureError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import insert, values, select
-from fastapi import Form, HTTPException, Depends
+from fastapi import Form, HTTPException, Depends, status
+from fastapi.security import (
+    HTTPBearer, 
+    HTTPAuthorizationCredentials, 
+    OAuth2PasswordBearer,
+    OAuth2PasswordRequestForm,
+)
 from pydantic import ValidationError, EmailStr
 
 from schemas.user import UserCreate, UserInfo, UserLogin
-from auth.utils import hash_password, validate_password
+from auth.utils import hash_password, validate_password, decode_jwt
 from database.models import User
 from database.database import get_db
+
+# http_bearer = HTTPBearer()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/login/")
 
 async def create_user(session: AsyncSession, user_data: UserCreate):
     try:
@@ -35,43 +45,74 @@ async def create_user(session: AsyncSession, user_data: UserCreate):
                 status_code=400,  # Bad Request
                 detail="Неизвестная ошибка базы данных"
             )
-        
-async def select_user_info(session: AsyncSession, id: int):
-    query = select(User).where(User.id == id)
-    info = await session.execute(query)
-
-    if info is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    user = info.scalar_one()
-    user_dict = {c.name: getattr(user, c.name) for c in user.__table__.columns}
-    return UserInfo.model_validate(user_dict)
 
 async def validate_user_login(
-    email: str = Form(max_length=100),
-    password: str = Form(min_length=8, max_length=128),
+    user_data: OAuth2PasswordRequestForm = Depends(),
     session: AsyncSession = Depends(get_db),
 ):
-    user_login = await check_user_exists(email, password, session)
+    user_login = await check_user_exists(user_data.username, user_data.password, session)
     return user_login
 
 async def check_user_exists(
     email: EmailStr, 
     password: str,
     session: AsyncSession,
-):
-    query = select(User.id, User.email, User.password).where(User.email == email)
+) -> UserLogin:
+    query = select(User.first_name, User.email, User.password).where(User.email == email)
     user_info = await session.execute(query)
     user = user_info.first()
     
-    #checking user
+    #checking if user exists
     if user is None:
         raise HTTPException(status_code=404, detail="Invalid password or email")
 
-    user_login = {"id": user[0], "email": user[1], "password": user[2]}
+    user_dict = {"first_name": user[0], "email": user[1], "password": user[2]}
 
-    # cheking password
-    if not validate_password(password, user_login["password"]):
-        raise HTTPException(status_code=401, detail="Invalid password")
+    # cheking is password correct
+    if validate_password(password, user_dict["password"]):
+        return UserLogin.model_validate(user_dict)
 
-    return UserLogin.model_validate(user_login)
+    raise HTTPException(status_code=401, detail="Invalid password")
+
+async def select_user_info(
+        email: str,
+        session: AsyncSession,
+) -> UserInfo:
+    query = select(User.first_name, User.last_name, User.age, User.email).where(User.email == email)
+    info = await session.execute(query)
+    user = info.first()
+
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user_dict = {"first_name": user[0], "last_name": user[1], "age": user[2], "email": user[3]}
+    return UserInfo.model_validate(user_dict)
+
+async def get_current_auth_user(
+        # credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
+        token: str = Depends(oauth2_scheme),
+        session: AsyncSession = Depends(get_db)
+) -> UserInfo:
+    print(token)
+    # token = credentials.credentials
+    try:
+        payload = decode_jwt(
+            token=token,
+        )  
+    except ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token expired"
+        )
+    except InvalidTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token"
+        )
+
+    user_email = payload.get("email")
+    if not user_email:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    
+    user_info = await select_user_info(email = user_email, session = session)
+    return user_info

@@ -14,7 +14,7 @@ class UserSchema(UserInfo):
     password: bytes = Field(min_length=8, max_length=128)
 
 class UserLogin(BaseModel):
-    id: int
+    first_name: str
     email: EmailStr
     password: bytes = Field(min_length=8, max_length=128)
 

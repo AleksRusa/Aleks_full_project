@@ -7,13 +7,16 @@ from fastapi import (
     Query
 )
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from database.database import get_db
-from schemas.user import UserCreate, UserLogin, Token
-from crud.user import create_user, select_user_info, validate_user_login
-from auth.utils import hash_password, encode_jwt
+from schemas.user import UserCreate, UserLogin, Token, UserInfo
+from crud.user import create_user, validate_user_login, get_current_auth_user, select_user_info
+from auth.utils import hash_password, encode_jwt, decode_jwt
 
 router = APIRouter(prefix="/user", tags=["user"])
+
+http_bearer = HTTPBearer()
 
 @router.post("/register/")
 async def register_user(
@@ -33,12 +36,6 @@ async def register_user(
     )
     return await create_user(session, user)
 
-@router.get("/info/")
-async def get_user_info(
-    user_id: int = Query(..., description="User ID"),
-    session: AsyncSession = Depends(get_db)
-):
-    return await select_user_info(session, user_id)
 
 @router.post("/login/", response_model=Token)
 def auth_user_issue_jwt(
@@ -46,12 +43,20 @@ def auth_user_issue_jwt(
     # session: AsyncSession = Depends(get_db)
 ):
     jwt_payload = {
-        "sub": user.id,
+        "sub": user.first_name,
         "email": user.email,
-        # "exp":  
     }
-    token = encode_jwt()
-    return Token(
+    token = encode_jwt(jwt_payload)
+    token = Token(
         access_token=token,
         token_type="Bearer",
     )
+    return token
+
+
+@router.get("/info/", response_model=UserInfo)
+async def get_user_info(
+    user: UserInfo = Depends(get_current_auth_user)
+) -> UserInfo:
+    return user
+

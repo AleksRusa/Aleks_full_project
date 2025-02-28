@@ -10,6 +10,7 @@ from sqlalchemy import text
 from fastapi import Form, HTTPException, status, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from database.database import async_session
 from routers.todotasks import router as task_router
@@ -39,7 +40,13 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
     return JSONResponse(status_code=422, content={"message": "Ошибка валидации данных", "details": errors})
 
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
     
