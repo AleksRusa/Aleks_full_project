@@ -27,23 +27,12 @@ async def create_user(session: AsyncSession, user_data: UserCreate):
         await session.commit()
         await session.refresh(user)
         return f"пользователь {user.first_name} успешно зарегистрирован"
-    except ValidationError as e:
-        # Обработка ошибок валидации Pydantic
-        raise HTTPException(
-            status_code=422,  # Unprocessable Entity
-            detail=f"Ошибка валидации данных: {e}"
-        )
     except IntegrityError as e:
         # Обработка конфликта уникальности (например, дублирующийся email)
         if "users_email_key" in str(e.orig):
             raise HTTPException(
                 status_code=409,  # Conflict
-                detail="Email уже существует"
-            )
-        else:
-            raise HTTPException(
-                status_code=400,  # Bad Request
-                detail="Неизвестная ошибка базы данных"
+                detail="Пользователь с таким email уже зарегистрирован"
             )
 
 async def validate_user_login(

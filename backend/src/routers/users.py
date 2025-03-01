@@ -16,31 +16,25 @@ from auth.utils import hash_password, encode_jwt, decode_jwt
 
 router = APIRouter(prefix="/user", tags=["user"])
 
-http_bearer = HTTPBearer()
 
 @router.post("/register/")
 async def register_user(
-    first_name: str = Form(min_length=2, max_length=50),
-    last_name: str = Form(min_length=2, max_length=50),
-    age: int = Form(ge=0, le=100),
-    email: str = Form(max_length=100),
-    password: str = Form(min_length=6, max_length=128),
+    user_data: UserCreate,
     session: AsyncSession = Depends(get_db),
 ):
     user = UserCreate(
-        first_name=first_name,
-        last_name=last_name,
-        age=age,
-        email=email,
-        password=hash_password(password)
+        first_name=user_data.first_name,
+        last_name=user_data.last_name,
+        age=user_data.age,
+        email=user_data.email,
+        password=hash_password(user_data.password)
     )
     return await create_user(session, user)
 
 
-@router.post("/login/", response_model=Token)
-def auth_user_issue_jwt(
+@router.post("/login/")
+async def auth_user_issue_jwt(
     user: UserLogin = Depends(validate_user_login),
-    # session: AsyncSession = Depends(get_db)
 ):
     jwt_payload = {
         "sub": user.first_name,
