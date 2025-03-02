@@ -10,9 +10,11 @@ class AuthJWT(BaseModel):
     access_token_expire_minutes: int = 15
 
 class Redis(BaseSettings):
-    host: str = Field(alias="REDIS_HOST")
-    port: int = Field(alias="REDIS_PORT")
-    db: int = Field(alias="REDIS_DB")
+    host: str = "localhost"
+    port: int = 6379
+    db: int = 0
+
+    model_config = SettingsConfigDict(env_prefix="REDIS__")
 
 class Settings(BaseSettings):
     DB_HOST: str
@@ -21,7 +23,7 @@ class Settings(BaseSettings):
     DB_PASS: str
     DB_NAME: str
 
-    redis: Redis
+    redis: Redis = Redis()
     auth_jwt: AuthJWT = AuthJWT()
 
     model_config = SettingsConfigDict(

@@ -5,7 +5,7 @@ import jwt
 from fastapi import Response
 from fastapi.responses import JSONResponse
 
-from database.config import settings
+from config.config import settings
 from schemas.user import Token
 
 
