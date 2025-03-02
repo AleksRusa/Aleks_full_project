@@ -2,7 +2,7 @@ from jwt import InvalidTokenError, ExpiredSignatureError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import insert, values, select
-from fastapi import Form, HTTPException, Depends, status
+from fastapi import HTTPException, Depends, status, Request
 from fastapi.security import (
     HTTPBearer, 
     HTTPAuthorizationCredentials, 
@@ -34,13 +34,7 @@ async def create_user(session: AsyncSession, user_data: UserCreate):
                 status_code=409,  # Conflict
                 detail="Пользователь с таким email уже зарегистрирован"
             )
-
-# async def validate_user_login(
-#     user_data: OAuth2PasswordRequestForm = Depends(),
-#     session: AsyncSession = Depends(get_db),
-# ):
-#     user_login = await check_user_exists(user_data.username, user_data.password, session)
-#     return user_login
+        
 
 async def check_user_exists(
     email: EmailStr, 
@@ -51,19 +45,18 @@ async def check_user_exists(
     user_info = await session.execute(query)
     user = user_info.first()
     
-    #checking if user exists
     if user is None:
         raise HTTPException(status_code=404, detail="Invalid password or email")
 
     user_dict = {"email": user[0], "password": user[1]}
 
-    # cheking is password correct
     if validate_password(password, user_dict["password"]):
         return UserLogin.model_validate(user_dict)
 
     raise HTTPException(status_code=401, detail="Invalid password")
 
-async def select_user_info(
+
+async def select_user_by_email(
         email: str,
         session: AsyncSession,
 ) -> UserInfo:
@@ -77,13 +70,15 @@ async def select_user_info(
     user_dict = {"first_name": user[0], "last_name": user[1], "age": user[2], "email": user[3]}
     return UserInfo.model_validate(user_dict)
 
+
 async def get_current_auth_user(
-        # credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
-        token: str = Depends(oauth2_scheme),
-        session: AsyncSession = Depends(get_db)
+    request: Request,
+    session: AsyncSession = Depends(get_db),
 ) -> UserInfo:
-    print(token)
-    # token = credentials.credentials
+    token = request.cookies.get('access_token')  # Получаем токен из куки
+    token = token.replace("Bearer ", "")
+    if token is None:
+        raise HTTPException(status_code=401, detail="Токен отсутствует")
     try:
         payload = decode_jwt(
             token=token,
@@ -98,10 +93,9 @@ async def get_current_auth_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token"
         )
-
-    user_email = payload.get("email")
+    user_email = payload.get("sub")
     if not user_email:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     
-    user_info = await select_user_info(email = user_email, session = session)
+    user_info = await select_user_by_email(email = user_email, session = session)
     return user_info

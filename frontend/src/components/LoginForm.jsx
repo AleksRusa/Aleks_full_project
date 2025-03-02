@@ -46,10 +46,10 @@ const LoginForm = () => {
     if (!validate()) return;
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/user/login/', formData);
-      const token = response.data.access_token;
-      localStorage.setItem('token', token);
-      navigate('/dashboard', { replace: true });
+      const response = await axios.post('http://localhost:8000/user/login/', formData, {
+          withCredentials: true,
+      });
+      navigate('/user/me', { replace: true });
     } catch (error) {
       console.log('Login error:', error.response);
 

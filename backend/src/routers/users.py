@@ -1,18 +1,21 @@
+from datetime import timedelta
+
 from fastapi import (
     APIRouter,
     HTTPException,
     Form,
     Depends,
     status,
-    Query
+    Query,
+    Response
 )
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.responses import Response, JSONResponse
 
 from database.database import get_db
 from schemas.user import UserCreate, UserLogin, Token, UserInfo
-from crud.user import create_user, get_current_auth_user, check_user_exists
-from auth.utils import hash_password, encode_jwt, decode_jwt
+from crud.user import create_user, check_user_exists, get_current_auth_user
+from auth.utils import hash_password, encode_jwt, decode_jwt, create_token_response
 
 router = APIRouter(prefix="/user", tags=["user"])
 
@@ -32,11 +35,12 @@ async def register_user(
     return await create_user(session, user)
 
 
-@router.post("/login/")
+@router.post("/login")
 async def auth_user_issue_jwt(
     user: UserLogin,
+    response: Response,
     session: AsyncSession = Depends(get_db),
-):
+) -> Response:
     user = await check_user_exists(email=user.email, password=user.password, session=session)
     jwt_payload = {
         "sub": user.email,
@@ -47,12 +51,11 @@ async def auth_user_issue_jwt(
         access_token=token,
         token_type="Bearer",
     )
-    return token
+    return create_token_response(token=token, response=response)
 
-
-@router.get("/info/", response_model=UserInfo)
+@router.get("/me/", response_model=UserInfo)
 async def get_user_info(
-    user: UserInfo = Depends(get_current_auth_user)
+    user: UserInfo = Depends(get_current_auth_user),
 ) -> UserInfo:
     return user
 

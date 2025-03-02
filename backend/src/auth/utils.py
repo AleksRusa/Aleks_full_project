@@ -2,8 +2,11 @@ from datetime import timedelta, datetime, timezone
 
 import bcrypt
 import jwt
+from fastapi import Response
+from fastapi.responses import JSONResponse
 
 from database.config import settings
+from schemas.user import Token
 
 
 def encode_jwt(
@@ -11,14 +14,10 @@ def encode_jwt(
         private_key: str = settings.auth_jwt.private_key_path.read_text(),
         algorithm: str =settings.auth_jwt.algorithm,
         expire_minutes: int = settings.auth_jwt.access_token_expire_minutes,
-        expire_timedelta: timedelta | None = None,
 ):
     to_encode = payload.copy()
     now = int(datetime.now(timezone.utc).timestamp())
-    if expire_timedelta:
-        expire = now + int(expire_timedelta.total_seconds())
-    else:
-        expire = now + int(timedelta(minutes=expire_minutes).total_seconds())
+    expire = now + int(timedelta(minutes=expire_minutes).total_seconds())
     to_encode.update(
         exp=expire,
         iat=now,
@@ -57,3 +56,16 @@ def validate_password(
         password=password.encode(),
         hashed_password=hashed_password
     )
+
+def create_token_response(token: Token, response: Response):
+    response.set_cookie(
+        key="access_token",
+        value=f"Bearer {token.access_token}",
+        httponly=True,
+        secure=False,
+        samesite="lax",
+        max_age=int(timedelta(minutes=settings.auth_jwt.access_token_expire_minutes).total_seconds()),
+        path="/",
+        domain="localhost",
+    )
+    return JSONResponse(content={"detail": "Login successful"}, status_code=200, headers=response.headers)

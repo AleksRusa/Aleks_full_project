@@ -57,7 +57,11 @@ const RegistrationForm = () => {
     if (!validate()) return;
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/user/register/', formData);
+      const response = await axios.post(
+          "http://localhost:8000/user/register/", 
+          formData,
+          { withCredentials: true }
+      );
       alert('Регистрация прошла успешно!');
 
       // Очистка формы
