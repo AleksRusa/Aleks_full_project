@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Импортируем useNavigate
+import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom'; // Добавим импорт Link
 import './RegistrationForm.css';
 
 const RegistrationForm = () => {
@@ -13,7 +14,7 @@ const RegistrationForm = () => {
   });
 
   const [errors, setErrors] = useState({});
-  const navigate = useNavigate(); // Инициализируем navigate
+  const navigate = useNavigate();
 
   const validatePassword = (password) => {
     const minLength = 6;
@@ -68,8 +69,8 @@ const RegistrationForm = () => {
         password: ''
       });
 
-      // Перенаправление на страницу авторизации
-      navigate('/login', { replace: true }); // Используем navigate вместо window.location.href
+      // Перенаправление на страницу авторизации через React Router
+      navigate('/login', { replace: true });
     } catch (error) {
       console.log('Server error:', error.response);
 
@@ -96,70 +97,80 @@ const RegistrationForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="registration-form">
-      {/* First Name */}
-      <div className={`form-group ${errors.first_name ? 'error-border' : ''}`}>
-        <label>First Name:</label>
-        <input 
-          type="text" 
-          name="first_name" 
-          value={formData.first_name}
-          onChange={handleChange}
-        />
-        {errors.first_name && <span className="error">{errors.first_name}</span>}
-      </div>
+    <div className="registration-container"> {/* Добавляем контейнер для центрирования */}
+      <h2>Регистрация</h2> {/* Добавляем заголовок "Регистрация" */}
+      <form onSubmit={handleSubmit} className="registration-form">
+        {/* First Name */}
+        <div className={`form-group ${errors.first_name ? 'error-border' : ''}`}>
+          <label>First Name:</label>
+          <input 
+            type="text" 
+            name="first_name" 
+            value={formData.first_name}
+            onChange={handleChange}
+          />
+          {errors.first_name && <span className="error">{errors.first_name}</span>}
+        </div>
 
-      {/* Last Name */}
-      <div className={`form-group ${errors.last_name ? 'error-border' : ''}`}>
-        <label>Last Name:</label>
-        <input 
-          type="text" 
-          name="last_name" 
-          value={formData.last_name}
-          onChange={handleChange}
-        />
-        {errors.last_name && <span className="error">{errors.last_name}</span>}
-      </div>
+        {/* Last Name */}
+        <div className={`form-group ${errors.last_name ? 'error-border' : ''}`}>
+          <label>Last Name:</label>
+          <input 
+            type="text" 
+            name="last_name" 
+            value={formData.last_name}
+            onChange={handleChange}
+          />
+          {errors.last_name && <span className="error">{errors.last_name}</span>}
+        </div>
 
-      {/* Age */}
-      <div className={`form-group ${errors.age ? 'error-border' : ''}`}>
-        <label>Age:</label>
-        <input 
-          type="number" 
-          name="age" 
-          value={formData.age}
-          onChange={handleChange}
-        />
-        {errors.age && <span className="error">{errors.age}</span>}
-      </div>
+        {/* Age */}
+        <div className={`form-group ${errors.age ? 'error-border' : ''}`}>
+          <label>Age:</label>
+          <input 
+            type="number" 
+            name="age" 
+            value={formData.age}
+            onChange={handleChange}
+          />
+          {errors.age && <span className="error">{errors.age}</span>}
+        </div>
 
-      {/* Email */}
-      <div className={`form-group ${errors.email ? 'error-border' : ''}`}>
-        <label>Email:</label>
-        <input 
-          type="email" 
-          name="email" 
-          value={formData.email}
-          onChange={handleChange}
-        />
-        {errors.email && <span className="error">{errors.email}</span>}
-      </div>
+        {/* Email */}
+        <div className={`form-group ${errors.email ? 'error-border' : ''}`}>
+          <label>Email:</label>
+          <input 
+            type="email" 
+            name="email" 
+            value={formData.email}
+            onChange={handleChange}
+          />
+          {errors.email && <span className="error">{errors.email}</span>}
+        </div>
 
-      {/* Password */}
-      <div className={`form-group ${errors.password ? 'error-border' : ''}`}>
-        <label>Password:</label>
-        <input 
-          type="password" 
-          name="password" 
-          value={formData.password}
-          onChange={handleChange}
-        />
-        {errors.password && <span className="error">{errors.password}</span>}
-      </div>
+        {/* Password */}
+        <div className={`form-group ${errors.password ? 'error-border' : ''}`}>
+          <label>Password:</label>
+          <input 
+            type="password" 
+            name="password" 
+            value={formData.password}
+            onChange={handleChange}
+          />
+          {errors.password && <span className="error">{errors.password}</span>}
+        </div>
 
-      {/* Submit Button */}
-      <button type="submit" className="submit-btn">Register</button>
-    </form>
+        <button type="submit" className="submit-btn">Register</button>
+
+        {/* Блок ссылки "Уже есть аккаунт?" */}
+        <div className="login-link">
+          Уже есть аккаунт?{' '}
+          <Link to="/login" className="link">
+            Войдите
+          </Link>
+        </div>
+      </form>
+    </div>
   );
 };
 

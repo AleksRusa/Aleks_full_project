@@ -11,7 +11,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from database.database import get_db
 from schemas.user import UserCreate, UserLogin, Token, UserInfo
-from crud.user import create_user, validate_user_login, get_current_auth_user, select_user_info
+from crud.user import create_user, get_current_auth_user, check_user_exists
 from auth.utils import hash_password, encode_jwt, decode_jwt
 
 router = APIRouter(prefix="/user", tags=["user"])
@@ -34,10 +34,12 @@ async def register_user(
 
 @router.post("/login/")
 async def auth_user_issue_jwt(
-    user: UserLogin = Depends(validate_user_login),
+    user: UserLogin,
+    session: AsyncSession = Depends(get_db),
 ):
+    user = await check_user_exists(email=user.email, password=user.password, session=session)
     jwt_payload = {
-        "sub": user.first_name,
+        "sub": user.email,
         "email": user.email,
     }
     token = encode_jwt(jwt_payload)

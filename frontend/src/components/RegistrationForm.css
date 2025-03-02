@@ -1,54 +1,104 @@
+/* RegistrationForm.css */
+
+/* Общий контейнер */
+.registration-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #f4f4f4; /* Светлый фон */
+  padding: 20px;
+}
+
+/* Форма */
 .registration-form {
-    max-width: 400px;
-    margin: 2rem auto;
-    padding: 2rem;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  }
-  
-  .form-group {
-    margin-bottom: 1rem;
-  }
-  
-  .form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-  }
-  
-  .form-group input {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-  }
-  
-  .error {
-    color: red;
-    font-size: 0.8em;
-    margin-top: 4px;
-  }
-  
-  
-  .form-group input {
-    border: 1px solid #ccc;
-    padding: 8px;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  
-  .form-group.error-border input {
-    border-color: red;
-  }
-  
-  .submit-btn {
-    background: #007bff;
-    color: white;
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    width: 100%;
-  }
-  
-  .submit-btn:hover {
-    background: #0056b3;
-  }
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  text-align: left;
+}
+
+/* Заголовок */
+h2 {
+  margin-bottom: 20px;
+  color: #333;
+  text-align: center; /* Центрируем заголовок */
+}
+
+/* Группы полей */
+.form-group {
+  margin-bottom: 15px;
+}
+
+/* Лейблы */
+label {
+  display: block;
+  margin-bottom: 5px;
+  color: #555;
+  font-weight: bold;
+}
+
+/* Input поля */
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+/* Красная рамка при ошибке */
+.error-border {
+  border-color: red !important;
+}
+
+/* Сообщения об ошибках */
+.error, .form-error {
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
+  display: block;
+}
+
+/* Кнопка отправки */
+.submit-btn {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* Hover-эффект для кнопки */
+.submit-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Блок ссылки "Уже есть аккаунт?" */
+.login-link {
+  margin-top: 15px; /* Отступ от кнопки */
+  text-align: center; /* Центрируем текст */
+  font-size: 15px; /* Размер шрифта */
+  color: #0e0d0d; /* Цвет основного текста */
+}
+
+/* Стили для ссылки */
+.link {
+  color: #007bff; /* Синий цвет ссылки */
+  text-decoration: underline; /* Подчеркивание */
+  transition: color 0.3s ease; /* Плавный переход цвета */
+}
+
+/* Hover-эффект для ссылки */
+.link:hover {
+  color: #0056b3; /* Темно-синий при наведении */
+}

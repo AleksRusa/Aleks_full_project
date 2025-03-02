@@ -35,19 +35,19 @@ async def create_user(session: AsyncSession, user_data: UserCreate):
                 detail="Пользователь с таким email уже зарегистрирован"
             )
 
-async def validate_user_login(
-    user_data: OAuth2PasswordRequestForm = Depends(),
-    session: AsyncSession = Depends(get_db),
-):
-    user_login = await check_user_exists(user_data.username, user_data.password, session)
-    return user_login
+# async def validate_user_login(
+#     user_data: OAuth2PasswordRequestForm = Depends(),
+#     session: AsyncSession = Depends(get_db),
+# ):
+#     user_login = await check_user_exists(user_data.username, user_data.password, session)
+#     return user_login
 
 async def check_user_exists(
     email: EmailStr, 
     password: str,
     session: AsyncSession,
 ) -> UserLogin:
-    query = select(User.first_name, User.email, User.password).where(User.email == email)
+    query = select(User.email, User.password).where(User.email == email)
     user_info = await session.execute(query)
     user = user_info.first()
     
@@ -55,7 +55,7 @@ async def check_user_exists(
     if user is None:
         raise HTTPException(status_code=404, detail="Invalid password or email")
 
-    user_dict = {"first_name": user[0], "email": user[1], "password": user[2]}
+    user_dict = {"email": user[0], "password": user[1]}
 
     # cheking is password correct
     if validate_password(password, user_dict["password"]):
