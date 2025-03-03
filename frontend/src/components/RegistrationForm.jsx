@@ -58,7 +58,7 @@ const RegistrationForm = () => {
 
     try {
       const response = await axios.post(
-          "http://localhost:8000/user/register/", 
+          "http://localhost:8000/api/user/register/", 
           formData,
           { withCredentials: true }
       );

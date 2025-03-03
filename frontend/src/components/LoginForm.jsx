@@ -19,7 +19,7 @@ const LoginForm = () => {
   };
 
   const validatePassword = (password) => {
-    return password.length >= 6;
+    return password.length >= 8;
   };
 
   const validate = () => {
@@ -34,7 +34,7 @@ const LoginForm = () => {
     if (!formData.password.trim()) {
       newErrors.password = 'Password is required';
     } else if (!validatePassword(formData.password)) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = 'Password must be at least 8 characters';
     }
 
     setErrors(newErrors);
@@ -46,7 +46,7 @@ const LoginForm = () => {
     if (!validate()) return;
 
     try {
-      const response = await axios.post('http://localhost:8000/user/login/', formData, {
+      const response = await axios.post('http://localhost:8000/api/user/login/', formData, {
           withCredentials: true,
       });
       navigate('/user/me', { replace: true });
@@ -103,7 +103,7 @@ const LoginForm = () => {
         
         <div className="registration-link">
           Ещё нет аккаунта? 
-          <Link to="/" className="link"> Зарегистрируйтесь </Link>
+          <Link to="/register" className="link"> Зарегистрируйтесь </Link>
         </div>
       </form>
     </div>

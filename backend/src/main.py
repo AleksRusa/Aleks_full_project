@@ -12,10 +12,8 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from database.database import async_session
 from routers.todotasks import router as task_router
 from routers.users import router as user_router
-from database.models import User
 
 
 app = FastAPI()
