@@ -103,7 +103,7 @@ const LoginForm = () => {
         
         <div className="registration-link">
           Ещё нет аккаунта? 
-          <Link to="/" className="link"> Зарегистрируйтесь </Link>
+          <Link to="/register" className="link"> Зарегистрируйтесь </Link>
         </div>
       </form>
     </div>

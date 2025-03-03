@@ -1,14 +1,21 @@
-# Путь к папке с Nginx
-$nginxPath = "D:\Program Files\nginx\nginx-1.26.3"
+# Путь к nginx.exe
+$nginxPath = "D:\nginx-1.27.4\nginx.exe"
 
 # Проверка, запущен ли уже Nginx
 $nginxProcess = Get-Process nginx -ErrorAction SilentlyContinue
 if ($nginxProcess) {
     Write-Host "Nginx уже запущен."
 } else {
-    # Запуск Nginx
-    Start-Process -FilePath "$nginxPath\nginx.exe" -NoNewWindow
-    Write-Host "Nginx запущен. Проверьте http://localhost"
+    # Создание директории logs, если она отсутствует
+    $logsDir = "D:\nginx-1.27.4\logs"
+    if (-not (Test-Path $logsDir)) {
+        New-Item -ItemType Directory -Path $logsDir
+        Write-Host "Директория logs создана: $logsDir"
+    }
+
+    # Запуск Nginx без указания конфигурационного файла (используется стандартный)
+    Start-Process -FilePath $nginxPath -NoNewWindow
+    Write-Host "Nginx запущен со стандартным конфигурационным файлом."
 }
 
 # Ожидание нажатия клавиши, чтобы окно не закрылось сразу
