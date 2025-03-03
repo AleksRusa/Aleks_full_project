@@ -14,7 +14,7 @@ class Redis(BaseSettings):
     port: int = 6379
     db: int = 0
 
-    model_config = SettingsConfigDict(env_prefix="REDIS__")
+    model_config = SettingsConfigDict(env_prefix="redis__")
 
 class Settings(BaseSettings):
     DB_HOST: str
