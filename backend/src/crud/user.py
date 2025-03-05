@@ -26,13 +26,13 @@ async def create_user(session: AsyncSession, user_data: UserCreate):
         session.add(user)
         await session.commit()
         await session.refresh(user)
-        return f"пользователь {user.first_name} успешно зарегистрирован"
+        return f"пользователь {user.username} успешно зарегистрирован"
     except IntegrityError as e:
         # Обработка конфликта уникальности (например, дублирующийся email)
         if "users_email_key" in str(e.orig):
             raise HTTPException(
                 status_code=409,  # Conflict
-                detail="Пользователь с таким email уже зарегистрирован"
+                detail="Пользователь с таким именем и почтой уже зарегистрирован"
             )
         
 
@@ -41,14 +41,15 @@ async def check_user_exists(
     password: str,
     session: AsyncSession,
 ) -> UserLogin:
-    query = select(User.email, User.password).where(User.email == email)
+    query = select(User.username, User.email, User.password).where(User.email == email)
     user_info = await session.execute(query)
     user = user_info.first()
+    print(user)
     
     if user is None:
         raise HTTPException(status_code=404, detail="Invalid password or email")
 
-    user_dict = {"email": user[0], "password": user[1]}
+    user_dict = {"username": user[0], "email": user[1], "password": user[2]}
 
     if validate_password(password, user_dict["password"]):
         return UserLogin.model_validate(user_dict)
@@ -57,17 +58,17 @@ async def check_user_exists(
 
 
 async def select_user_by_email(
-        email: str,
+        email: EmailStr,
         session: AsyncSession,
 ) -> UserInfo:
-    query = select(User.first_name, User.last_name, User.age, User.email).where(User.email == email)
+    query = select(User.username, User.email).where(User.email == email)
     info = await session.execute(query)
     user = info.first()
 
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     
-    user_dict = {"first_name": user[0], "last_name": user[1], "age": user[2], "email": user[3]}
+    user_dict = {"username": user[0], "email": user[1]}
     return UserInfo.model_validate(user_dict)
 
 
@@ -93,7 +94,7 @@ async def get_current_auth_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token"
         )
-    user_email = payload.get("sub")
+    user_email = payload.get("email")
     if not user_email:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     

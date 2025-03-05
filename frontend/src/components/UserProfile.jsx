@@ -9,7 +9,7 @@ const UserProfile = () => {
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await axios.get('http://localhost:8000/api/user/me', {
+                const response = await axios.get('http://localhost:8000/user/me', {
                     withCredentials: true,
                 });
                 setUserData(response.data);
@@ -33,9 +33,7 @@ const UserProfile = () => {
     return (
         <div className="user-profile">
             <h2>Информация о пользователе</h2>
-            <p><strong>Имя:</strong> {userData.first_name}</p>
-            <p><strong>Фамилия:</strong> {userData.last_name}</p>
-            <p><strong>Возраст:</strong> {userData.age}</p>
+            <p><strong>Имя пользователя:</strong> {userData.username}</p>
             <p><strong>Email:</strong> {userData.email}</p>
         </div>
     );

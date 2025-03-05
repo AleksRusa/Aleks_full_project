@@ -26,9 +26,7 @@ async def register_user(
     session: AsyncSession = Depends(get_db),
 ):
     user = UserCreate(
-        first_name=user_data.first_name,
-        last_name=user_data.last_name,
-        age=user_data.age,
+        username=user_data.username,
         email=user_data.email,
         password=hash_password(user_data.password)
     )
