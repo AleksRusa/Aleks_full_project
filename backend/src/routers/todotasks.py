@@ -8,8 +8,9 @@ from crud.todotask import create_task, select_user_tasks
 router = APIRouter(prefix="/todolist", tags=["todolist"])
 
 
-@router.post("/", response_model=TodoTaskResponse)
+@router.post("/createTask/", response_model=TodoTaskResponse)
 async def create_todotask(
+    request: Request,
     todotask: TodoTask,
     session: AsyncSession = Depends(get_db)
 ):
