@@ -71,32 +71,58 @@ async def select_user_by_email(
     user_dict = {"username": user[0], "email": user[1]}
     return UserInfo.model_validate(user_dict)
 
+async def select_user_id_by_email(
+        email: EmailStr,
+        session: AsyncSession,
+):
+    query = select(User.id).where(User.email == email)
+    id = await session.execute(query)
+    user_id = id.first()
+    if user_id is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user_id_dict = {"id": user_id[0]}
+    return user_id_dict
 
-async def get_current_auth_user(
-    request: Request,
-    session: AsyncSession = Depends(get_db),
-) -> UserInfo:
+async def get_user_email(request: Request):
     token = request.cookies.get('access_token')  # Получаем токен из куки
     token = token.replace("Bearer ", "")
     if token is None:
         raise HTTPException(status_code=401, detail="Токен отсутствует")
     try:
-        payload = decode_jwt(
-            token=token,
-        )  
+        payload = decode_jwt(token=token)
+        user_email = payload.get("email")
+        if not user_email:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, 
+                detail="Unauthorized"
+            )
+        return user_email
     except ExpiredSignatureError:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_401_UNAUTHORIZED, 
             detail="Token expired"
         )
     except InvalidTokenError:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_401_UNAUTHORIZED, 
             detail="Invalid token"
         )
-    user_email = payload.get("email")
-    if not user_email:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     
+
+async def get_current_auth_user(
+    request: Request,
+    session: AsyncSession = Depends(get_db),
+) -> UserInfo:
+    user_email = get_user_email(request=request)
     user_info = await select_user_by_email(email = user_email, session = session)
     return user_info
+
+async def get_user_id_from_token(
+    request: Request,
+    session: AsyncSession = Depends(get_db)
+)-> int:
+    user_email = get_user_email(request=request)
+    user_id = await select_user_id_by_email(email = user_email, session = session)
+    return user_id
+
