@@ -5,12 +5,10 @@ class UserInfo(BaseModel):
     email: EmailStr
     
 class UserCreate(UserInfo):
-    password: bytes = Field(min_length=8, max_length=128)
+    password: str = Field(min_length=8, max_length=128)
 
 class UserSchema(UserInfo):
-    model_config = ConfigDict(string=True)
-    
-    password: bytes = Field(min_length=8, max_length=128)
+    password: bytes
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -18,4 +16,5 @@ class UserLogin(BaseModel):
 
 class Token(BaseModel):
     access_token: str
-    token_type: str 
+    refresh_token: str
+    token_type: str = "Bearer"

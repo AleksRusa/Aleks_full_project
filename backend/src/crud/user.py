@@ -11,15 +11,22 @@ from fastapi.security import (
 )
 from pydantic import ValidationError, EmailStr
 
-from schemas.user import UserCreate, UserInfo, UserLogin
-from auth.utils import hash_password, validate_password, decode_jwt
+from schemas.user import UserInfo, UserLogin, UserSchema, Token
+from auth.utils import (
+    hash_password, 
+    validate_password, 
+    decode_jwt,
+    create_access_token,
+    create_refresh_token,
+    create_token_response,
+)
 from database.models import User
 from database.database import get_db
 
 # http_bearer = HTTPBearer()
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/login/")
 
-async def create_user(session: AsyncSession, user_data: UserCreate):
+async def create_user(session: AsyncSession, user_data: UserSchema):
     try:
         user_dict = user_data.model_dump(exclude_unset=True)
         user = User(**user_dict)
@@ -80,20 +87,40 @@ async def select_user_id_by_email(
     if user_id is None:
         raise HTTPException(status_code=404, detail="User not found")
     return user_id[0]
+        
+
+async def create_new_tokens(
+    request: Request,
+):
+    refresh_token = request.cookies.get('refresh_token')
+    user_email = await get_email_from_token(refresh_token)
+    access_token = await create_access_token(user_email=user_email)
+    refresh_token = await create_refresh_token(user_email=user_email)
+    token = Token(
+        access_token=access_token,
+        refresh_token=refresh_token,
+    )
+    return token
+
 
 async def get_user_email_from_token(
-        request: Request,
-        session: AsyncSession,                  
-    ):
-    token = request.cookies.get('access_token')  # Получаем токен из куки
-    if not token:  # Если куки нет вообще
-        raise HTTPException(status_code=401, detail="Авторизуйтесь заново")
-    token = token.replace("Bearer ", "")
-    if token is None:
-        raise HTTPException(status_code=401, detail="Войдите снова")
+    request: Request,                  
+):
+    access_token = request.cookies.get('access_token') 
+    if access_token is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Unauthorized"
+        )
+    email = await get_email_from_token(access_token)
+    return email
+
+async def get_email_from_token(
+    token: str,
+):
     try:
         payload = decode_jwt(token=token)
-        user_email = payload.get("email")
+        user_email = payload.get("sub")
         if not user_email:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, 
@@ -110,13 +137,12 @@ async def get_user_email_from_token(
             status_code=status.HTTP_401_UNAUTHORIZED, 
             detail="Invalid token"
         )
-    
 
 async def get_current_auth_user(
     request: Request,
     session: AsyncSession = Depends(get_db),
 ) -> UserInfo:
-    user_email = await get_user_email_from_token(request=request, session=session)
+    user_email = await get_user_email_from_token(request=request)
     user_info = await select_user_by_email(email = user_email, session = session)
     return user_info
 
@@ -124,7 +150,7 @@ async def get_user_id_from_token(
     request: Request,
     session: AsyncSession,
 )-> int:
-    user_email = await get_user_email_from_token(request=request, session=session)
+    user_email = await get_user_email_from_token(request=request)
     user_id = await select_user_id_by_email(email = user_email, session = session)
     return user_id
 

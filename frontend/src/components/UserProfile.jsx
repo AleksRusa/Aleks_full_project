@@ -1,53 +1,76 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import './UserProfile.css'; // Импортируем стили
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import "./UserProfile.css"; // Стили
 
 const UserProfile = () => {
-    const [userData, setUserData] = useState(null);
-    const [error, setError] = useState(null);
+  const [userData, setUserData] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                const response = await axios.get('http://localhost:8000/user/me', {
-                    withCredentials: true,
-                });
-                setUserData(response.data);
-            } catch (err) {
-                setError('Не удалось загрузить данные пользователя');
-                console.error(err);
-            }
-        };
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        // Запрос на получение данных пользователя
+        const response = await axios.get("http://localhost:8000/user/me", {
+          withCredentials: true,
+        });
+        setUserData(response.data);
+      } catch (err) {
+        console.error("Ошибка при загрузке данных:", err.response);
+        if (err.response?.status === 401) {
+          try {
+            // Если 401, пробуем обновить токены
+            await axios.get("http://localhost:8000/user/refresh-tokens", {
+              withCredentials: true,
+            });
 
-        fetchUserData();
-    }, []);
+            // После успешного обновления токенов пробуем снова получить данные пользователя
+            const retryResponse = await axios.get("http://localhost:8000/user/me", {
+              withCredentials: true,
+            });
+            setUserData(retryResponse.data);
+          } catch (refreshError) {
+            console.error("Ошибка при обновлении токена:", refreshError.response);
+            setError("Сессия истекла. Пожалуйста, войдите заново.");
+          }
+        } else {
+          setError("Не удалось загрузить данные пользователя.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    if (error) {
-        return <div className="error">{error}</div>;
-    }
+    fetchUserData();
+  }, []);
 
-    if (!userData) {
-        return <div className="loading">Загрузка...</div>;
-    }
-    return (
-        <div>
-            <div className="user-profile">
-                <h2>Информация о пользователе</h2>
-                <p><strong>Имя пользователя:</strong> {userData.username}</p>
-                <p><strong>Email:</strong> {userData.email}</p>
-            </div>
+  if (loading) {
+    return <div className="loading">Загрузка...</div>;
+  }
 
-            <div className="notes-message">
-            <p>Перейти к заметкам</p>
-            <button
-            onClick={() => window.location.href = "http://localhost:5173/todolist/"}
-            className="notes-button"
-            >
-            Заметки
-            </button>
-            </div>
-        </div>
-    );
+  if (error) {
+    return <div className="error">{error}</div>;
+  }
+
+  return (
+    <div>
+      <div className="user-profile">
+        <h2>Информация о пользователе</h2>
+        <p><strong>Имя пользователя:</strong> {userData.username}</p>
+        <p><strong>Email:</strong> {userData.email}</p>
+      </div>
+
+      <div className="notes-message">
+        <p>Перейти к заметкам</p>
+        <button
+          onClick={() => window.location.href = "http://localhost:5173/todolist/"}
+          className="notes-button"
+        >
+          Заметки
+        </button>
+      </div>
+    </div>
+  );
 };
 
 export default UserProfile;
