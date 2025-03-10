@@ -29,12 +29,23 @@ const UserProfile = () => {
     if (!userData) {
         return <div className="loading">Загрузка...</div>;
     }
-
     return (
-        <div className="user-profile">
-            <h2>Информация о пользователе</h2>
-            <p><strong>Имя пользователя:</strong> {userData.username}</p>
-            <p><strong>Email:</strong> {userData.email}</p>
+        <div>
+            <div className="user-profile">
+                <h2>Информация о пользователе</h2>
+                <p><strong>Имя пользователя:</strong> {userData.username}</p>
+                <p><strong>Email:</strong> {userData.email}</p>
+            </div>
+
+            <div className="notes-message">
+            <p>Перейти к заметкам</p>
+            <button
+            onClick={() => window.location.href = "http://localhost:5173/todolist/"}
+            className="notes-button"
+            >
+            Заметки
+            </button>
+            </div>
         </div>
     );
 };

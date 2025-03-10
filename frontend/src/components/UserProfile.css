@@ -37,3 +37,19 @@
     font-size: 18px;
     color: #ff0000;
 }
+
+.notes-message {
+    text-align: center;
+    margin-top: 20px;
+}
+  
+.notes-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+}

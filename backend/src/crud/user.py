@@ -44,7 +44,6 @@ async def check_user_exists(
     query = select(User.username, User.email, User.password).where(User.email == email)
     user_info = await session.execute(query)
     user = user_info.first()
-    print(user)
     
     if user is None:
         raise HTTPException(status_code=404, detail="Invalid password or email")
@@ -80,15 +79,18 @@ async def select_user_id_by_email(
     user_id = id.first()
     if user_id is None:
         raise HTTPException(status_code=404, detail="User not found")
-    
-    user_id_dict = {"id": user_id[0]}
-    return user_id_dict
+    return user_id[0]
 
-async def get_user_email(request: Request):
+async def get_user_email_from_token(
+        request: Request,
+        session: AsyncSession,                  
+    ):
     token = request.cookies.get('access_token')  # Получаем токен из куки
+    if not token:  # Если куки нет вообще
+        raise HTTPException(status_code=401, detail="Авторизуйтесь заново")
     token = token.replace("Bearer ", "")
     if token is None:
-        raise HTTPException(status_code=401, detail="Токен отсутствует")
+        raise HTTPException(status_code=401, detail="Войдите снова")
     try:
         payload = decode_jwt(token=token)
         user_email = payload.get("email")
@@ -114,15 +116,15 @@ async def get_current_auth_user(
     request: Request,
     session: AsyncSession = Depends(get_db),
 ) -> UserInfo:
-    user_email = get_user_email(request=request)
+    user_email = await get_user_email_from_token(request=request, session=session)
     user_info = await select_user_by_email(email = user_email, session = session)
     return user_info
 
 async def get_user_id_from_token(
     request: Request,
-    session: AsyncSession = Depends(get_db)
+    session: AsyncSession,
 )-> int:
-    user_email = get_user_email(request=request)
+    user_email = await get_user_email_from_token(request=request, session=session)
     user_id = await select_user_id_by_email(email = user_email, session = session)
     return user_id
 

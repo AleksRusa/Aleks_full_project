@@ -5,10 +5,10 @@ class TodoTask(BaseModel):
     uuid: UUID
     description: str
 
-class TodotaskResponse(BaseModel):
+class TodotaskInfo(BaseModel):
     uuid: UUID
     description: str
-    user_id: int
+    is_done: bool
 
 
 class TodoTaskStatus(BaseModel):

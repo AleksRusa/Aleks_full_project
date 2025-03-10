@@ -2,35 +2,41 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.database import get_db
-from schemas.todotask import TodoTask, TodoTaskStatus, TodotaskResponse
-from crud.todotask import create_task, select_user_tasks
+from schemas.todotask import TodoTask, TodoTaskStatus, TodotaskInfo
+from crud.todotask import create_task, select_user_tasks, change_task_status, change_task_body
 from crud.user import get_user_id_from_token
 
 router = APIRouter(prefix="/todolist", tags=["todolist"])
 
 
-@router.post("/createTask/", response_model=TodoTask)
+@router.post("/createTask/")
 async def create_todotask(
     request: Request,
     todotask: TodoTask,
     session: AsyncSession = Depends(get_db)
 ):
-    id = get_user_id_from_token(request=request)
+    id = await get_user_id_from_token(request=request, session=session)
     return await create_task(session=session, todotask=todotask, user_id=id)
 
 
-@router.get("/get_user_tasks/", response_model=list[TodoTask])
+@router.get("/get_user_tasks/", response_model=list[TodotaskInfo])
 async def user_tasks(
     request: Request,
-    db: AsyncSession = Depends(get_db),
+    session: AsyncSession = Depends(get_db),
 ):
-    return await select_user_tasks(db)
+    return await select_user_tasks(session=session, request=request)
 
-@router.post("/taskDone/")
-async def change_task_status():
-    pass
+@router.patch("/taskDone/")
+async def task_status(
+    task: TodoTaskStatus,
+    session: AsyncSession = Depends(get_db),
+):
+    return await change_task_status(session=session, task=task)
 
 
-@router.post("/updateTask/")
-async def update_task_body():
-    pass
+@router.patch("/updateTask/")
+async def update_task_body(
+    task: TodoTask,
+    session: AsyncSession = Depends(get_db)
+):
+    return await change_task_body(session=session, task=task)
