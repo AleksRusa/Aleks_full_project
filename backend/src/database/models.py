@@ -5,6 +5,7 @@ from enum import Enum
 from sqlalchemy import String, Text, CheckConstraint, ForeignKey, text, LargeBinary
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.sqltypes import TIMESTAMP
+from uuid import UUID
 
 from database.database import Base
 
@@ -22,38 +23,37 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int_id]
-    first_name: Mapped[str_64]
-    last_name: Mapped[str_64]
-    age: Mapped[int]
+    username: Mapped[str_64]
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     password: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
 
     authorized: Mapped[bool]= mapped_column(default=False)
-    admin: Mapped[bool] = mapped_column(default=False)
 
     created_at: Mapped[created_at]
     updated_at: Mapped[updated_at]
 
-
-
     __table_args__ = (
-        CheckConstraint("email LIKE '%@%.%'", name="valid_email"), 
-        CheckConstraint("age > 0 AND age <= 100", name="valid_age"),
+        CheckConstraint("email LIKE '%@%.%'", name="valid_email"),
     )
+
+    tasks = relationship("Todolist", back_populates="user")
 
 class Todolist(Base):
     __tablename__ = "todolist"
 
-    id: Mapped[int_id]
+    uuid: Mapped[UUID] = mapped_column(primary_key=True)
     description: Mapped[str] = mapped_column(Text)
     is_done: Mapped[bool] = mapped_column(default=False)
 
     user_id = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
 
+    user = relationship("User", back_populates="tasks")
+
+
 class CalendarTask(Base):
     __tablename__ = "calendar_tasks"
 
-    id: Mapped[int_id]
+    uuid: Mapped[UUID] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(256))
     description: Mapped[str] = mapped_column(Text)
     start_time: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False)

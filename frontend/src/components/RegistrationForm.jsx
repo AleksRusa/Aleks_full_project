@@ -6,9 +6,7 @@ import './RegistrationForm.css';
 
 const RegistrationForm = () => {
   const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
-    age: '',
+    username: '',
     email: '',
     password: ''
   });
@@ -16,6 +14,7 @@ const RegistrationForm = () => {
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
+  // Валидация password: минимальная длина, буквы и цифры
   const validatePassword = (password) => {
     const minLength = 6;
     const hasLetter = /[a-zA-Z]/.test(password);
@@ -23,27 +22,28 @@ const RegistrationForm = () => {
     return password.length >= minLength && hasLetter && hasNumber;
   };
 
+  // Валидация username: только буквы
+  const validateUsername = (username) => {
+    return /^[a-zA-Z]+$/.test(username); // Только буквы
+  };
+
   const validate = () => {
     const newErrors = {};
 
-    if (!formData.first_name || formData.first_name.length < 2 || formData.first_name.length > 50) {
-      newErrors.first_name = 'First name must be 2-50 characters';
+    // Валидация username
+    if (!formData.username.trim()) {
+      newErrors.username = 'Username is required';
+    } else if (!validateUsername(formData.username)) {
+      newErrors.username = 'Username must contain only letters';
     }
 
-    if (!formData.last_name || formData.last_name.length < 2 || formData.last_name.length > 50) {
-      newErrors.last_name = 'Last name must be 2-50 characters';
-    }
-
-    const age = parseInt(formData.age);
-    if (isNaN(age) || age < 0 || age > 100) {
-      newErrors.age = 'Age must be between 0 and 100';
-    }
-
+    // Валидация email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       newErrors.email = 'Invalid email format';
     }
 
+    // Валидация password
     if (!validatePassword(formData.password)) {
       newErrors.password = 'Password must be at least 6 characters with letters and numbers';
     }
@@ -58,17 +58,15 @@ const RegistrationForm = () => {
 
     try {
       const response = await axios.post(
-          "http://localhost:8000/api/user/register/", 
-          formData,
-          { withCredentials: true }
+        "http://localhost:8000/user/register/", 
+        formData,
+        { withCredentials: true }
       );
       alert('Регистрация прошла успешно!');
 
       // Очистка формы
       setFormData({
-        first_name: '',
-        last_name: '',
-        age: '',
+        username: '',
         email: '',
         password: ''
       });
@@ -104,40 +102,16 @@ const RegistrationForm = () => {
     <div className="registration-container"> {/* Добавляем контейнер для центрирования */}
       <h2>Регистрация</h2> {/* Добавляем заголовок "Регистрация" */}
       <form onSubmit={handleSubmit} className="registration-form">
-        {/* First Name */}
-        <div className={`form-group ${errors.first_name ? 'error-border' : ''}`}>
-          <label>First Name:</label>
+        {/* Username */}
+        <div className={`form-group ${errors.username ? 'error-border' : ''}`}>
+          <label>Username:</label>
           <input 
             type="text" 
-            name="first_name" 
-            value={formData.first_name}
+            name="username" 
+            value={formData.username}
             onChange={handleChange}
           />
-          {errors.first_name && <span className="error">{errors.first_name}</span>}
-        </div>
-
-        {/* Last Name */}
-        <div className={`form-group ${errors.last_name ? 'error-border' : ''}`}>
-          <label>Last Name:</label>
-          <input 
-            type="text" 
-            name="last_name" 
-            value={formData.last_name}
-            onChange={handleChange}
-          />
-          {errors.last_name && <span className="error">{errors.last_name}</span>}
-        </div>
-
-        {/* Age */}
-        <div className={`form-group ${errors.age ? 'error-border' : ''}`}>
-          <label>Age:</label>
-          <input 
-            type="number" 
-            name="age" 
-            value={formData.age}
-            onChange={handleChange}
-          />
-          {errors.age && <span className="error">{errors.age}</span>}
+          {errors.username && <span className="error">{errors.username}</span>}
         </div>
 
         {/* Email */}

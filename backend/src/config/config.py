@@ -8,13 +8,14 @@ class AuthJWT(BaseModel):
     public_key_path: Path = Path("src/certs/jwt-public.pem")
     algorithm: str = "RS256"
     access_token_expire_minutes: int = 15
+    refresh_token_expire_days: int = 30
 
 class Redis(BaseSettings):
     host: str = "localhost"
     port: int = 6379
     db: int = 0
 
-    model_config = SettingsConfigDict(env_prefix="REDIS__")
+    model_config = SettingsConfigDict(env_prefix="redis__")
 
 class Settings(BaseSettings):
     DB_HOST: str

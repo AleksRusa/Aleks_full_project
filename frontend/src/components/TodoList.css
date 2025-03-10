@@ -1,0 +1,109 @@
+.notes-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.notes-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.note-item {
+  display: flex;
+  align-items: flex-start; /* Выравнивание по верхнему краю */
+  gap: 10px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}
+
+.note-checkbox {
+  margin-top: 5px; /* Чтобы чекбокс был на уровне текста */
+  cursor: pointer;
+}
+
+.note-text {
+  flex: 1;
+  cursor: pointer;
+  padding: 5px;
+  border: 1px solid transparent; /* Прозрачная граница для выравнивания */
+}
+
+.note-text.line-through {
+  text-decoration: line-through;
+  color: #888;
+}
+
+.note-edit-input {
+  flex: 1;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  font-size: 16px;
+  background-color: white; /* Белый фон для видимости */
+  outline: none; /* Убираем стандартный outline */
+}
+
+.note-edit-input:focus {
+  border-color: #007bff; /* Подсветка при фокусе */
+}
+
+.new-note {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.note-input {
+  flex: 1;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  font-size: 16px;
+}
+
+.add-note-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-note-button:hover {
+  background-color: #0056b3;
+}
+
+.login-message {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.login-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+.login-button:hover {
+  background-color: #0056b3;
+}
