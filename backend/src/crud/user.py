@@ -17,7 +17,7 @@ from database.models import User
 from database.database import get_db
 
 # http_bearer = HTTPBearer()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/login/")
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/login/")
 
 async def create_user(session: AsyncSession, user_data: UserCreate):
     try:

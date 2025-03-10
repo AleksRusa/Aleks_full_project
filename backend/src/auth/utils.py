@@ -4,10 +4,16 @@ import bcrypt
 import jwt
 from fastapi import Response
 from fastapi.responses import JSONResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.config import settings
-from schemas.user import Token
+from schemas.user import Token, UserLogin
+from crud.user import check_user_exists
 
+
+TOKEN_TYPE_FIELD = "type"
+ACCESS_TOKEN_TYPE = "access"
+REFRESH_TOKEN_TYPE = "refresh"
 
 def encode_jwt(
         payload: dict,
@@ -69,3 +75,27 @@ def create_token_response(token: Token, response: Response):
         domain="localhost",
     )
     return JSONResponse(content={"detail": "Login successful"}, status_code=200, headers=response.headers)
+
+async def create_jwt(
+    token_type: str,
+    token_payload: dict,
+    expire_minutes: int = settings.auth_jwt.access_token_expire_minutes,
+    expire_timedelta: timedelta | None = None
+):
+    pass
+
+async def create_access_token(
+    user: UserLogin,
+    session: AsyncSession,
+)-> Token:
+    user = await check_user_exists(email=user.email, password=user.password, session=session)
+    jwt_payload = {
+        "sub": user.email,
+        "email": user.email,
+    }
+    token = encode_jwt(jwt_payload)
+    token = Token(
+        access_token=token,
+        token_type="Bearer",
+    )
+    return token

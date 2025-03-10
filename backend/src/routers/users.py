@@ -14,8 +14,8 @@ from fastapi.responses import Response, JSONResponse
 
 from database.database import get_db
 from schemas.user import UserCreate, UserLogin, Token, UserInfo
-from crud.user import create_user, check_user_exists, get_current_auth_user
-from auth.utils import hash_password, encode_jwt, decode_jwt, create_token_response
+from crud.user import create_user, get_current_auth_user
+from auth.utils import hash_password, encode_jwt, decode_jwt, create_token_response, create_access_token
 
 router = APIRouter(prefix="/user", tags=["user"])
 
@@ -39,15 +39,9 @@ async def auth_user_issue_jwt(
     response: Response,
     session: AsyncSession = Depends(get_db),
 ) -> Response:
-    user = await check_user_exists(email=user.email, password=user.password, session=session)
-    jwt_payload = {
-        "sub": user.email,
-        "email": user.email,
-    }
-    token = encode_jwt(jwt_payload)
-    token = Token(
-        access_token=token,
-        token_type="Bearer",
+    token = create_access_token(
+        user=user,
+        session=session,
     )
     return create_token_response(token=token, response=response)
 
