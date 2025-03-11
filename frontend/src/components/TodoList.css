@@ -17,6 +17,25 @@
   gap: 10px;
 }
 
+.delete-button {
+  background: none;
+  border: none;
+  color: #ff4d4d;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 5px;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.delete-button:hover {
+  color: #d60000;
+  transform: scale(1.2);
+}
+
+.delete-button:active {
+  transform: scale(1);
+}
+
 .note-item {
   display: flex;
   align-items: flex-start; /* Выравнивание по верхнему краю */

@@ -4,6 +4,8 @@ class UserInfo(BaseModel):
     username: str = Field(max_length=64)
     email: EmailStr
     
+class UserDelete(BaseModel):
+    password: str = Field(min_length=8, max_length=128)
 class UserCreate(UserInfo):
     password: str = Field(min_length=8, max_length=128)
 

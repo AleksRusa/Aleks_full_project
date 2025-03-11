@@ -20,7 +20,7 @@ const UserProfile = () => {
         if (err.response?.status === 401) {
           try {
             // Если 401, пробуем обновить токены
-            await axios.get("http://localhost:8000/user/refresh-tokens", {
+            await axios.get("http://localhost:8000/user/refresh", {
               withCredentials: true,
             });
 

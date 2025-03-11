@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaTrash } from "react-icons/fa";
 import { v4 as uuidv4 } from "uuid";
 import { useNavigate } from "react-router-dom";
 import "./TodoList.css";
@@ -17,14 +17,37 @@ const TodoList = () => {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
+        // Запрос на получение задач
         const response = await fetch("http://localhost:8000/todolist/get_user_tasks/", {
-          credentials: 'include'
+          credentials: "include",
         });
+  
+        // Если задача загрузилась успешно
         if (response.ok) {
           const data = await response.json();
           setTasks(data);
         } else if (response.status === 401) {
-          setError("unauthorized");
+          // Если не авторизован, попытаться обновить токен
+          const refreshResponse = await fetch("http://localhost:8000/user/refresh/", {
+            credentials: "include",
+          });
+  
+          // Если refresh токен успешен
+          if (refreshResponse.ok) {
+            // После успешного обновления токена снова запросить задачи
+            const retryResponse = await fetch("http://localhost:8000/todolist/get_user_tasks/", {
+              credentials: "include",
+            });
+  
+            if (retryResponse.ok) {
+              const retryData = await retryResponse.json();
+              setTasks(retryData);
+            } else {
+              setError("Ошибка при загрузке задач");
+            }
+          } else {
+            setError("unauthorized");
+          }
         } else {
           setError("Ошибка при загрузке задач");
         }
@@ -34,8 +57,10 @@ const TodoList = () => {
         setLoading(false);
       }
     };
+  
     fetchTasks();
   }, [navigate]);
+  
 
   const addTask = async () => {
     if (input.trim()) {
@@ -47,9 +72,9 @@ const TodoList = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newTask),
-          credentials: 'include'
+          credentials: "include",
         });
-  
+
         if (response.status === 401) {
           setError("unauthorized");
         } else if (response.ok) {
@@ -64,6 +89,50 @@ const TodoList = () => {
     }
   };
 
+  const handleDeleteUser = async () => {
+    const userPassword = prompt("Введите пароль для подтверждения удаления аккаунта:");
+    if (!userPassword) return;
+  
+    try {
+      const response = await fetch("http://localhost:8000/user/delete_user/", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ password: userPassword }), // Передача пароля в теле запроса
+      });
+  
+      if (response.ok) {
+        alert("Аккаунт удалён");
+        window.location.href = "/login";
+      } else {
+        console.error("Ошибка при удалении аккаунта");
+      }
+    } catch {
+      console.error("Ошибка сети при удалении аккаунта");
+    }
+  };
+  
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("http://localhost:8000/user/logout/", {
+        method: "POST",
+        credentials: "include",
+      });
+      if (response.ok) {
+        alert("Вы вышли из системы");
+        window.location.href = "/login";
+      } else {
+        console.error("Ошибка при выходе из системы");
+      }
+    } catch {
+      console.error("Ошибка сети при выходе из системы");
+    }
+  };
+
+
   const handleCheck = async (taskUuid) => {
     const updatedTasks = tasks.map((task) =>
       task.uuid === taskUuid ? { ...task, is_done: !task.is_done } : task
@@ -73,8 +142,11 @@ const TodoList = () => {
       const response = await fetch("http://localhost:8000/todolist/taskDone/", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uuid: taskUuid, is_done: updatedTasks.find((task) => task.uuid === taskUuid).is_done }),
-        credentials: 'include'
+        body: JSON.stringify({
+          uuid: taskUuid,
+          is_done: updatedTasks.find((task) => task.uuid === taskUuid).is_done,
+        }),
+        credentials: "include",
       });
       if (response.status === 401) {
         setError("unauthorized");
@@ -85,6 +157,29 @@ const TodoList = () => {
       console.error("Ошибка при выполнении запроса:", error);
     }
   };
+
+  const handleDelete = async (taskUuid) => {
+  try {
+    const response = await fetch(`http://localhost:8000/todolist/deleteTask/`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json", // Указываем тип данных
+      },
+      credentials: "include",
+      body: JSON.stringify({ uuid: taskUuid }), // Передаем uuid в теле запроса
+    });
+
+    if (response.status === 401) {
+      setError("unauthorized");
+    } else if (response.ok) {
+      setTasks(tasks.filter((task) => task.uuid !== taskUuid));
+    } else {
+      console.error("Ошибка при удалении задачи:", response.statusText);
+    }
+  } catch (error) {
+    console.error("Ошибка при выполнении запроса:", error);
+  }
+};
 
   const handleEditClick = (task) => {
     setEditingTaskId(task.uuid);
@@ -104,7 +199,7 @@ const TodoList = () => {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ uuid: taskUuid, description: editedText.trim() }),
-          credentials: 'include'
+          credentials: "include",
         });
         if (response.status === 401) {
           setError("unauthorized");
@@ -135,7 +230,7 @@ const TodoList = () => {
       <div className="login-message">
         <p>Чтобы просматривать и редактировать заметки, пожалуйста, войдите в аккаунт.</p>
         <button
-          onClick={() => window.location.href = "http://localhost:5173/login/"}
+          onClick={() => (window.location.href = "http://localhost:5173/login/")}
           className="login-button"
         >
           Войти
@@ -167,12 +262,16 @@ const TodoList = () => {
                 autoFocus
               />
             ) : (
-            <span
-              onClick={() => handleEditClick(task)}
-              className={`note-text ${task.is_done ? "line-through" : ""}`}>
-              {task.description}
-            </span>
+              <span
+                onClick={() => handleEditClick(task)}
+                className={`note-text ${task.is_done ? "line-through" : ""}`}
+              >
+                {task.description}
+              </span>
             )}
+            <button className="delete-button" onClick={() => handleDelete(task.uuid)}>
+              <FaTrash />
+            </button>
           </div>
         ))}
         <div className="new-note">
@@ -188,6 +287,10 @@ const TodoList = () => {
             <FaPlus />
           </button>
         </div>
+      </div>
+      <div className="user-actions">
+        <button className="logout-button" onClick={handleLogout}>Выйти</button>
+        <button className="delete-user-button" onClick={handleDeleteUser}>Удалить аккаунт</button>
       </div>
     </div>
   );

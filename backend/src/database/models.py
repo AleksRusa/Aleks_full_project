@@ -27,7 +27,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     password: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
 
-    authorized: Mapped[bool]= mapped_column(default=False)
+    email_verified: Mapped[bool] = mapped_column(default=False)
 
     created_at: Mapped[created_at]
     updated_at: Mapped[updated_at]

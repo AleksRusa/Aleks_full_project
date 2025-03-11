@@ -1,8 +1,8 @@
 from jwt import InvalidTokenError, ExpiredSignatureError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import insert, values, select
-from fastapi import HTTPException, Depends, status, Request
+from sqlalchemy import insert, values, select, delete
+from fastapi import HTTPException, Depends, status, Request, Response
 from fastapi.security import (
     HTTPBearer, 
     HTTPAuthorizationCredentials, 
@@ -11,7 +11,7 @@ from fastapi.security import (
 )
 from pydantic import ValidationError, EmailStr
 
-from schemas.user import UserInfo, UserLogin, UserSchema, Token
+from schemas.user import UserInfo, UserLogin, UserSchema, Token, UserDelete
 from auth.utils import (
     hash_password, 
     validate_password, 
@@ -102,6 +102,24 @@ async def create_new_tokens(
     )
     return token
 
+async def delete_account(
+    request: Request,
+    password: UserDelete,
+    session: AsyncSession,
+    response: Response
+):
+    user_email = await get_user_email_from_token(request=request)
+    user = check_user_exists(
+        email=user_email, 
+        password=password,
+        session=session,
+    )
+    query = delete(User).where(User.email == user_email)
+    await session.execute(query)
+    await session.commit()
+    return "Successful"
+    
+    
 
 async def get_user_email_from_token(
     request: Request,                  

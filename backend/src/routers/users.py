@@ -7,14 +7,15 @@ from fastapi import (
     Depends,
     status,
     Query,
-    Response
+    Response,
+    Request,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.responses import Response, JSONResponse
 
 from database.database import get_db
-from schemas.user import UserCreate, UserLogin, Token, UserInfo, UserSchema
-from crud.user import create_user, get_current_auth_user, check_user_exists, create_new_tokens
+from schemas.user import UserCreate, UserLogin, Token, UserInfo, UserSchema, UserDelete
+from crud.user import create_user, get_current_auth_user, check_user_exists, create_new_tokens, delete_account
 from auth.utils import (
     hash_password, 
     encode_jwt, 
@@ -39,6 +40,28 @@ async def register_user(
     )
     return await create_user(session, user)
 
+@router.delete("/delete_user/")
+async def delete_user(
+    user_passwd: UserDelete,
+    request: Request,
+    response: Response,
+    session: AsyncSession = Depends(get_db),
+):
+    deleted = await delete_account(
+        request=request,
+        password=user_passwd,
+        session=session,
+        response=response,
+    )
+    if deleted == "Successful":
+        response.delete_cookie("access_token")
+        response.delete_cookie("refresh_token")
+
+@router.post("/logout")
+async def logout(response: Response):
+    response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token")
+    return {"message": "Logged out"}
 
 @router.post("/login")
 async def auth_user_issue_jwt(
@@ -61,7 +84,7 @@ async def get_user_info(
 ) -> UserInfo:
     return user
 
-@router.get("/refresh-tokens/")
+@router.get("/refresh/")
 async def refresh_tokens(
     response: Response,
     token: Token = Depends(create_new_tokens),

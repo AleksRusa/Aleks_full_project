@@ -1,10 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import insert, select, update
+from sqlalchemy import insert, select, update, delete
 from fastapi import Request, Depends
 
 from database.database import get_db
 from database.models import Todolist
-from schemas.todotask import TodoTask, TodotaskInfo, TodoTaskStatus
+from schemas.todotask import TodoTask, TodotaskInfo, TodoTaskStatus, TaskId
 from crud.user import get_user_id_from_token
 
 async def create_task(session: AsyncSession, todotask: TodoTask, user_id: int):
@@ -30,8 +30,7 @@ async def select_user_tasks(
 
     if not Notes:
         return []
-    
-    print(Notes)
+
     UserNotes = [
         TodotaskInfo(
             uuid=note.uuid, 
@@ -62,3 +61,12 @@ async def change_task_body(
     await session.execute(query)
     await session.commit()
     return {"message": "you changed your task"}
+
+async def delete_task_by_id(
+    task_id: TaskId,
+    session: AsyncSession,
+):
+    query = delete(Todolist).where(Todolist.uuid == task_id)
+    await session.execute(query)
+    await session.commit()
+    return {"message": "task deleted"}

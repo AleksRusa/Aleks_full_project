@@ -81,8 +81,9 @@ def create_token_response(token: Token, response: Response):
         value=token.refresh_token,
         httponly=True,
         secure=False,
-        samesite="lax",
-        max_age=2592000  # 30 дней в секундах
+        samesite="Strict",
+        max_age=2592000,
+        path="/user/refresh/"  # 30 дней в секундах
     )
     return JSONResponse(content={"detail": "Login successful"}, status_code=200, headers=response.headers)
 
