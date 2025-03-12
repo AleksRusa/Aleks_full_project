@@ -18,4 +18,4 @@ async def get_db():
     try:
         yield db
     finally: 
-        await db.close()
+        await db.aclose()

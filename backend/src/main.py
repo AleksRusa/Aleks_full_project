@@ -20,23 +20,6 @@ app = FastAPI()
 app.include_router(task_router)
 app.include_router(user_router)
 
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    errors = exc.errors()
-    
-    for error in errors:
-        loc = error["loc"]
-        msg = error["msg"]
-
-        # Проверка на ошибку с email
-        if "email" in loc:
-            return JSONResponse(status_code=422, content={"message": "Некорректный email!"})
-
-        # Проверка на ошибку с возрастом
-        if "age" in loc:
-            return JSONResponse(status_code=422, content={"message": "Возраст должен быть от 1 до 100 лет!"})
-
-    return JSONResponse(status_code=422, content={"message": "Ошибка валидации данных", "details": errors})
 
 app.add_middleware(
     CORSMiddleware,
@@ -49,11 +32,7 @@ app.add_middleware(
 )
 
 
-    
-
-
 if __name__ == "__main__":
-    # asyncio.run(main())
     uvicorn.run(
         app="src.main:app",
         reload=True,

@@ -12,33 +12,32 @@ from fastapi import (
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.responses import Response, JSONResponse
+from redis.asyncio import Redis
 
 from database.database import get_db
 from schemas.user import UserCreate, UserLogin, Token, UserInfo, UserSchema, UserDelete
-from crud.user import create_user, get_current_auth_user, check_user_exists, create_new_tokens, delete_account
-from auth.utils import (
-    hash_password, 
-    encode_jwt, 
-    decode_jwt, 
-    create_token_response, 
-    create_access_token,
-    create_refresh_token,
-)
+from crud.user import create_user, get_current_auth_user, refresh_tokens, delete_account, create_tokens, get_user_email_from_token
+from auth.utils import hash_password, create_token_response
+from redis_client import get_redis
+
 
 router = APIRouter(prefix="/user", tags=["user"])
-
 
 @router.post("/register/")
 async def register_user(
     user_data: UserCreate,
+    response: Response,
     session: AsyncSession = Depends(get_db),
 ):
+    user_login = UserLogin(email=user_data.email, password=user_data.password)
     user = UserSchema(
         username=user_data.username,
         email=user_data.email,
         password=hash_password(user_data.password)
     )
-    return await create_user(session, user)
+    await create_user(session, user)
+    token = await create_tokens(user=user_login, session=session)
+    return create_token_response(token=token, response=response)
 
 @router.delete("/delete_user/")
 async def delete_user(
@@ -69,24 +68,29 @@ async def auth_user_issue_jwt(
     response: Response,
     session: AsyncSession = Depends(get_db),
 ) -> Response:
-    user = await check_user_exists(email=user.email, password=user.password, session=session)
-    access_token = await create_access_token(user_email=user.email)
-    refresh_token = await create_refresh_token(user_email=user.email)
-    token = Token(
-        access_token=access_token,
-        refresh_token=refresh_token,
-    )
+    token = await create_tokens(user=user, session=session)
     return create_token_response(token=token, response=response)
 
 @router.get("/me/", response_model=UserInfo)
 async def get_user_info(
-    user: UserInfo = Depends(get_current_auth_user),
+    request: Request,
+    session: AsyncSession = Depends(get_db),
+    redis_client: Redis = Depends(get_redis),
 ) -> UserInfo:
+    user_email = await get_user_email_from_token(
+        request=request, 
+        redis_client=redis_client,
+    )
+    user = await get_current_auth_user(
+        user_email=user_email, 
+        session=session,
+        redis_client=redis_client,
+    )
     return user
 
 @router.get("/refresh/")
-async def refresh_tokens(
+async def refresh_access_and_refresh_tokens(
     response: Response,
-    token: Token = Depends(create_new_tokens),
+    token: Token = Depends(refresh_tokens),
 ):
     return create_token_response(token=token, response=response)

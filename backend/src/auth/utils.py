@@ -45,7 +45,7 @@ def decode_jwt(
     algorithms: list[str] = [settings.auth_jwt.algorithm],
 ):
     decoded = jwt.decode(
-        token,
+        token.encode("utf-8"),
         public_key,
         algorithms=algorithms,
     )

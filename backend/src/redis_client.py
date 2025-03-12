@@ -1,10 +1,9 @@
-import aioredis
+import redis.asyncio as redis
 
-from config.config import settings
 
 async def get_redis():
-    redis = await aioredis.from_url(settings.redis_url_aioredis)
+    redis_client = await redis.from_url("redis://localhost:6379")
     try:
-        yield redis
+        yield redis_client
     finally:
-        await redis.close()
+        await redis_client.aclose()
