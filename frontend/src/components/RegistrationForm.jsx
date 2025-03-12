@@ -72,7 +72,7 @@ const RegistrationForm = () => {
       });
 
       // Перенаправление на страницу авторизации через React Router
-      navigate('/login', { replace: true });
+      navigate('/user/me', { replace: true });
     } catch (error) {
       console.log('Server error:', error.response);
 
