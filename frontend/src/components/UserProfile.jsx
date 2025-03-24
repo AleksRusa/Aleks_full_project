@@ -20,7 +20,7 @@ const UserProfile = () => {
         if (err.response?.status === 401) {
           try {
             // Если 401, пробуем обновить токены
-            await axios.get("http://localhost:8000/user/refresh", {
+            await axios.get("http://localhost:8000/user/refresh/", {
               withCredentials: true,
             });
 
@@ -63,7 +63,7 @@ const UserProfile = () => {
       <div className="notes-message">
         <p>Перейти к заметкам</p>
         <button
-          onClick={() => window.location.href = "http://localhost:5173/todolist/"}
+          onClick={() => window.location.href = "http://localhost/todolist/"}
           className="notes-button"
         >
           Заметки

@@ -15,8 +15,8 @@ from fastapi.responses import Response, JSONResponse
 from redis.asyncio import Redis
 
 from database.database import get_db
-from schemas.user import UserCreate, UserLogin, Token, UserInfo, UserSchema, UserDelete
-from crud.user import create_user, get_current_auth_user, refresh_tokens, delete_account, create_tokens, get_user_email_from_token
+from schemas.user import UserCreate, UserLogin, Token, UserInfo, UserSchema, UserPasswd
+from crud.user import create_user, get_current_auth_user, refresh_tokens, delete_account, create_tokens, get_email_from_token
 from auth.utils import hash_password, create_token_response
 from redis_client import get_redis
 
@@ -28,6 +28,7 @@ async def register_user(
     user_data: UserCreate,
     response: Response,
     session: AsyncSession = Depends(get_db),
+    redis_client: Redis = Depends(get_redis)
 ):
     user_login = UserLogin(email=user_data.email, password=user_data.password)
     user = UserSchema(
@@ -36,19 +37,21 @@ async def register_user(
         password=hash_password(user_data.password)
     )
     await create_user(session, user)
-    token = await create_tokens(user=user_login, session=session)
+    token = await create_tokens(user=user_login, session=session, redis_client=redis_client)
     return create_token_response(token=token, response=response)
 
 @router.delete("/delete_user/")
 async def delete_user(
-    user_passwd: UserDelete,
+    user_passwd: UserPasswd,
     request: Request,
     response: Response,
     session: AsyncSession = Depends(get_db),
+    redis_client: Redis = Depends(get_redis),
 ):
     deleted = await delete_account(
         request=request,
         password=user_passwd,
+        redis_client=redis_client,
         session=session,
         response=response,
     )
@@ -67,8 +70,9 @@ async def auth_user_issue_jwt(
     user: UserLogin,
     response: Response,
     session: AsyncSession = Depends(get_db),
+    redis_client: Redis = Depends(get_redis),
 ) -> Response:
-    token = await create_tokens(user=user, session=session)
+    token = await create_tokens(user=user, session=session, redis_client=redis_client)
     return create_token_response(token=token, response=response)
 
 @router.get("/me/", response_model=UserInfo)
@@ -77,12 +81,15 @@ async def get_user_info(
     session: AsyncSession = Depends(get_db),
     redis_client: Redis = Depends(get_redis),
 ) -> UserInfo:
-    user_email = await get_user_email_from_token(
-        request=request, 
+    access_token = request.cookies.get('access_token')
+    if not access_token:
+        raise HTTPException(status_code=401, detail="Refresh token is missing")
+    user_email = await get_email_from_token(
+        token=access_token,
         redis_client=redis_client,
     )
     user = await get_current_auth_user(
-        user_email=user_email, 
+        email=user_email, 
         session=session,
         redis_client=redis_client,
     )

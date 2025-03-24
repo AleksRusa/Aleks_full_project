@@ -1,8 +1,11 @@
 import { useState } from 'react';
+import { useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom'; // Добавим импорт Link
 import './RegistrationForm.css';
+import * as VKID from '@vkid/sdk';
+import { vkConfig, generateRandomString, generateCodeChallenge } from './vkconfig.js'; // Импорт конфигурации; 
 
 const RegistrationForm = () => {
   const [formData, setFormData] = useState({
@@ -98,6 +101,97 @@ const RegistrationForm = () => {
     });
   };
 
+  const handleError = (error) => {
+    console.error('Ошибка в VKID OneTap:', error);
+    alert('Произошла ошибка при авторизации. Пожалуйста, попробуйте снова.');
+  };
+
+//   const VKAuthButton = () => {
+//     useEffect(() => {
+//       const fetchdata = async () => {
+//         const state = generateRandomString(32);
+//         const code_verifier = generateRandomString(64);
+//         const code_challenge = generateCodeChallenge(code_verifier)
+
+//         sessionStorage.setItem('code_verifier', code_verifier);
+
+//         // Инициализация VKID SDK
+//         VKID.Config.init({
+//             app: vkConfig.app,
+//             redirectUrl: vkConfig.redirectUrl,
+//             state,
+//             code_challenge,
+//             code_challenge_method: "S256",
+//             scopes: vkConfig.scopes,
+//         });
+
+//         // Создание экземпляра OneTap
+//         const oneTap = new VKID.OneTap();
+//         const container = document.getElementById('VkIdSdkOneTap');
+
+//         if (container) {
+//           // Отрисовка кнопки в контейнере с именем приложения APP_NAME, светлой темой и на русском языке.
+//           oneTap.render({ container: container, scheme: VKID.Scheme.LIGHT, lang: VKID.Languages.RUS })
+//             .on(VKID.WidgetEvents.LOGIN_FAILED, handleError);
+          
+//           const code_verifier = sessionStorage.getItem('code_verifier');
+//           const urlParams = new URLSearchParams(window.location.search);
+//           const code = urlParams.get('code');
+//           const state = urlParams.get('state');
+//           const device_id = urlParams.get('device_id');
+
+
+//           const handleAuthSuccess = async () => {
+//             try {
+//               const response = await axios.post(
+//                 'http://localhost:8000/api/vk-auth/callback/', 
+//                 null,
+//                 {
+//                   params: {
+//                     code_verifier: code_verifier,
+//                     state: state,
+//                     device_id: device_id,
+//                     code: code,
+//                   },
+//                 }
+//               );
+//             } catch (error) {
+//               console.error('Ошибка:', error);
+//             }
+//           };
+//           await handleAuthSuccess();
+//         }
+//       };
+      
+//       fetchdata();
+//         // const params = new URLSearchParams(window.location.search);
+//         // const code = params.get('code');
+//         // const returnedState = params.get('state');
+//         // const device_id = params.get('device_id');
+//       }, []);
+
+//     //     const handleAuthSuccess = async () => {
+//     //       try {
+//     //         const response = await axios.get('http://localhost:8000/api/vk-auth/callback/', {
+//     //           code_verifier: codeVerifier,
+//     //           // Здесь нужно добавить code, state и device_id после авторизации
+//     //           // Эти данные должны быть получены из URL-параметров после редиректа
+//     //         });
+//     //         console.log(response.data);
+//     //       } catch (error) {
+//     //         console.error('Ошибка:', error);
+//     //       }
+//     //     };
+//     // }, []);
+
+//     return (
+//         <div>
+//             <div id="VkIdSdkOneTap"></div>
+//         </div>
+//     );
+// };
+
+  
   return (
     <div className="registration-container"> {/* Добавляем контейнер для центрирования */}
       <h2>Регистрация</h2> {/* Добавляем заголовок "Регистрация" */}
@@ -139,6 +233,8 @@ const RegistrationForm = () => {
         </div>
 
         <button type="submit" className="submit-btn">Register</button>
+
+        {/* <VKAuthButton /> */}
 
         {/* Блок ссылки "Уже есть аккаунт?" */}
         <div className="login-link">

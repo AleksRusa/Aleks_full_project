@@ -230,7 +230,7 @@ const TodoList = () => {
       <div className="login-message">
         <p>Чтобы просматривать и редактировать заметки, пожалуйста, войдите в аккаунт.</p>
         <button
-          onClick={() => (window.location.href = "http://localhost:5173/login/")}
+          onClick={() => (window.location.href = "http://localhost/login/")}
           className="login-button"
         >
           Войти

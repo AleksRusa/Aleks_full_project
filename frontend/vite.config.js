@@ -8,4 +8,9 @@ export default defineConfig({
     tailwindcss(),
   ],
   base: "/",
+  server: {
+    port: 80, // Указываем порт 80
+    strictPort: true, // Если порт занят, приложение не запустится
+  }
+
 });

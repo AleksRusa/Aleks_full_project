@@ -11,26 +11,32 @@ from fastapi import Form, HTTPException, status, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 
 from routers.todotasks import router as task_router
 from routers.users import router as user_router
+from routers.auth import router as auth_router
 
 
 app = FastAPI()
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key="odfljfdsgfdvdfmvdfl;mvlae",
+    session_cookie="session_cookie"
+)
+
 app.include_router(task_router)
 app.include_router(user_router)
-
+app.include_router(auth_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-    ],
+    allow_origins=["http://localhost:80/register", "http://localhost:8000", "http://localhost"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 if __name__ == "__main__":
     uvicorn.run(

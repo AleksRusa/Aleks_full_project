@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import insert, select, update, delete
 from fastapi import Request, Depends
+from redis.asyncio import Redis
 
 from database.database import get_db
 from database.models import Todolist
@@ -22,8 +23,9 @@ async def create_task(session: AsyncSession, todotask: TodoTask, user_id: int):
 async def select_user_tasks(
     session: AsyncSession,
     request: Request,
+    redis_client: Redis,
 )-> list[TodotaskInfo]:
-    id_from_token = await get_user_id_from_token(session=session, request=request)
+    id_from_token = await get_user_id_from_token(session=session, request=request, redis_client=redis_client)
     query = select(Todolist).where(Todolist.user_id == id_from_token)
     NotesInfo = await session.execute(query)
     Notes = NotesInfo.scalars().all()
@@ -38,7 +40,6 @@ async def select_user_tasks(
             is_done=note.is_done,
         )
         for note in Notes]
-    print(UserNotes)
     return UserNotes
 
 async def change_task_status(

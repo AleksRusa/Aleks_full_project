@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from redis.asyncio import Redis
 
+from redis_client import get_redis
 from database.database import get_db
 from schemas.todotask import TodoTask, TodoTaskStatus, TodotaskInfo, TaskId
 from crud.todotask import create_task, select_user_tasks, change_task_status, change_task_body, delete_task_by_id
@@ -13,9 +15,10 @@ router = APIRouter(prefix="/todolist", tags=["todolist"])
 async def create_todotask(
     request: Request,
     todotask: TodoTask,
-    session: AsyncSession = Depends(get_db)
+    session: AsyncSession = Depends(get_db),
+    redis_client: Redis = Depends(get_redis)
 ):
-    id = await get_user_id_from_token(request=request, session=session)
+    id = await get_user_id_from_token(request=request, session=session, redis_client=redis_client)
     return await create_task(session=session, todotask=todotask, user_id=id)
 
 
@@ -23,8 +26,9 @@ async def create_todotask(
 async def user_tasks(
     request: Request,
     session: AsyncSession = Depends(get_db),
+    redis_client: Redis = Depends(get_redis),
 ):
-    return await select_user_tasks(session=session, request=request)
+    return await select_user_tasks(session=session, request=request, redis_client=redis_client)
 
 @router.patch("/taskDone/")
 async def task_status(
