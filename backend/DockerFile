@@ -2,7 +2,7 @@
 FROM python:3.9-slim
 
 # Устанавливаем рабочую директорию
-WORKDIR /app/backend
+WORKDIR /app
 
 # Копируем зависимости
 COPY requirements.txt /app/
@@ -11,7 +11,7 @@ COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Копируем весь код
-COPY . /app/backend/
+COPY . /app/
 
 # Открываем порты
 EXPOSE 8000
