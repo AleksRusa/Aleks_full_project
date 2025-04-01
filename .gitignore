@@ -1,6 +1,7 @@
-*.env
-!.example.env
+backend/.env
 backend/venv
-*venv
-backend/src/certs/
-backend/certs/*
+backend/src/certs/*
+
+fronend/node_modules
+frontend/dist
+
