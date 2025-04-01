@@ -32,7 +32,7 @@ app.include_router(auth_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:80/register", "http://localhost:8000", "http://localhost"],
+    allow_origins=["http://localhost:3000", "http://localhost", "http://172.20.10.2:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
