@@ -1,0 +1,18 @@
+
+# Конфиденциальные файлы
+.env
+*.pem
+
+# Артефакты сборки
+*.pyc
+*.pyo
+__pycache__
+node_modules/
+*.egg-info
+
+# Инструменты тестирования и кэш
+*.test
+*.bak
+pytest_cache/
+*.cover
+coverage.xml

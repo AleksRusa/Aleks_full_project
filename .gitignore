@@ -2,5 +2,5 @@
 !.example.env
 backend/venv
 *venv
-backend/src/auth/certs/
+backend/src/certs/
 backend/certs/*
