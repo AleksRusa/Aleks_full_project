@@ -2,6 +2,6 @@ backend/.env
 backend/venv
 backend/src/certs/*
 
-fronend/node_modules
+frontend/node_modules
 frontend/dist
 
