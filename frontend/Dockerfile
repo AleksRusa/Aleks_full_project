@@ -1,17 +1,17 @@
 # Используем официальную Node-образ
-FROM node:16
+FROM node:18
 
 # Устанавливаем рабочую директорию
-WORKDIR /app/frontend
+WORKDIR /app
 
 # Копируем package.json и package-lock.json
-COPY package*.json ./
+COPY package*.json /app/
 
 # Устанавливаем зависимости
 RUN npm install
 
 # Копируем весь код
-COPY . /app/frontend/
+COPY . /app/
 
 # Открываем порт для Vite
 EXPOSE 3000

@@ -15,3 +15,5 @@ node_modules/
 pytest_cache/
 *.cover
 coverage.xml
+
+config/*

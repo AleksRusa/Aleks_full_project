@@ -5,8 +5,7 @@ from sqlalchemy.orm import DeclarativeBase
 
 from config.config import settings
 
-DATABASE_URL_asyncpg = settings.DATABASE_URL_asyncpg
-database_url = os.environ.get('DATABASE_URL_asyncpg') or DATABASE_URL_asyncpg
+database_url = os.environ.get('DATABASE_URL_asyncpg')
 
 async_engine = create_async_engine(
     url=database_url,

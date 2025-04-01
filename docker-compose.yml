@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   postgres:
-    image: postgres:15
+    image: postgres:latest
     restart: always
     environment:
       POSTGRES_USER: myuser
@@ -14,7 +12,7 @@ services:
       - "5435:5432"
 
   redis:
-    image: redis:7
+    image: redis:latest
     restart: always
     ports:
       - "6379:6379"
@@ -27,7 +25,7 @@ services:
       dockerfile: Dockerfile
     restart: always
     environment:
-      DATABASE_URL: postgresql+asyncpg://myuser:mypassword@postgres/mydatabase
+      DATABASE_URL_asyncpg: postgresql+asyncpg://myuser:mypassword@postgres/mydatabase
       REDIS_URL: redis://redis:6379
       JWT_PRIVATE_KEY: /keys/jwt-private.pem
       JWT_PUBLIC_KEY: /keys/jwt-public.pem
