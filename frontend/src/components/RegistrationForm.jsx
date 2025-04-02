@@ -61,7 +61,7 @@ const RegistrationForm = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/user/register/", 
+        "http://backend:8000/user/register/", 
         formData,
         { withCredentials: true }
       );

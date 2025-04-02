@@ -11,7 +11,7 @@ const UserProfile = () => {
     const fetchUserData = async () => {
       try {
         // Запрос на получение данных пользователя
-        const response = await axios.get("http://localhost:8000/user/me", {
+        const response = await axios.get("http://backend:8000/user/me", {
           withCredentials: true,
         });
         setUserData(response.data);
@@ -20,12 +20,12 @@ const UserProfile = () => {
         if (err.response?.status === 401) {
           try {
             // Если 401, пробуем обновить токены
-            await axios.get("http://localhost:8000/user/refresh/", {
+            await axios.get("http://backend:8000/user/refresh/", {
               withCredentials: true,
             });
 
             // После успешного обновления токенов пробуем снова получить данные пользователя
-            const retryResponse = await axios.get("http://localhost:8000/user/me", {
+            const retryResponse = await axios.get("http://backend:8000/user/me", {
               withCredentials: true,
             });
             setUserData(retryResponse.data);
@@ -63,7 +63,7 @@ const UserProfile = () => {
       <div className="notes-message">
         <p>Перейти к заметкам</p>
         <button
-          onClick={() => window.location.href = "http://localhost/todolist/"}
+          onClick={() => window.location.href = "http://172.20.10.2:3000/todolist/"}
           className="notes-button"
         >
           Заметки

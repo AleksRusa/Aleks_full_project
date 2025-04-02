@@ -18,7 +18,7 @@ const TodoList = () => {
     const fetchTasks = async () => {
       try {
         // Запрос на получение задач
-        const response = await fetch("http://localhost:8000/todolist/get_user_tasks/", {
+        const response = await fetch("http://backend:8000/todolist/get_user_tasks/", {
           credentials: "include",
         });
   
@@ -28,14 +28,14 @@ const TodoList = () => {
           setTasks(data);
         } else if (response.status === 401) {
           // Если не авторизован, попытаться обновить токен
-          const refreshResponse = await fetch("http://localhost:8000/user/refresh/", {
+          const refreshResponse = await fetch("http://backend:8000/user/refresh/", {
             credentials: "include",
           });
   
           // Если refresh токен успешен
           if (refreshResponse.ok) {
             // После успешного обновления токена снова запросить задачи
-            const retryResponse = await fetch("http://localhost:8000/todolist/get_user_tasks/", {
+            const retryResponse = await fetch("http://backend:8000/todolist/get_user_tasks/", {
               credentials: "include",
             });
   
@@ -68,7 +68,7 @@ const TodoList = () => {
       setTasks([...tasks, newTask]);
       setInput("");
       try {
-        const response = await fetch("http://localhost:8000/todolist/createTask/", {
+        const response = await fetch("http://backend:8000/todolist/createTask/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newTask),
@@ -94,7 +94,7 @@ const TodoList = () => {
     if (!userPassword) return;
   
     try {
-      const response = await fetch("http://localhost:8000/user/delete_user/", {
+      const response = await fetch("http://backend:8000/user/delete_user/", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -117,7 +117,7 @@ const TodoList = () => {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://localhost:8000/user/logout/", {
+      const response = await fetch("http://backend:8000/user/logout/", {
         method: "POST",
         credentials: "include",
       });
@@ -139,7 +139,7 @@ const TodoList = () => {
     );
     setTasks(updatedTasks);
     try {
-      const response = await fetch("http://localhost:8000/todolist/taskDone/", {
+      const response = await fetch("http://backend:8000/todolist/taskDone/", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -160,7 +160,7 @@ const TodoList = () => {
 
   const handleDelete = async (taskUuid) => {
   try {
-    const response = await fetch(`http://localhost:8000/todolist/deleteTask/`, {
+    const response = await fetch(`http://backend:8000/todolist/deleteTask/`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json", // Указываем тип данных
@@ -195,7 +195,7 @@ const TodoList = () => {
       setEditingTaskId(null);
       setEditedText("");
       try {
-        const response = await fetch("http://localhost:8000/todolist/updateTask/", {
+        const response = await fetch("http://backend:8000/todolist/updateTask/", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ uuid: taskUuid, description: editedText.trim() }),
@@ -230,7 +230,7 @@ const TodoList = () => {
       <div className="login-message">
         <p>Чтобы просматривать и редактировать заметки, пожалуйста, войдите в аккаунт.</p>
         <button
-          onClick={() => (window.location.href = "http://localhost/login/")}
+          onClick={() => (window.location.href = "http://172.20.10.2:3000/login/")}
           className="login-button"
         >
           Войти

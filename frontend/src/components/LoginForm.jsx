@@ -46,7 +46,7 @@ const LoginForm = () => {
     if (!validate()) return;
 
     try {
-      const response = await axios.post('http://localhost:8000/user/login/', formData, {
+      const response = await axios.post('http://backend:8000/user/login/', formData, {
           withCredentials: true,
       });
       navigate('/user/me', { replace: true });
